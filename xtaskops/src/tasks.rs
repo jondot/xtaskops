@@ -93,3 +93,72 @@ pub fn coverage(devmode: bool) -> AnyResult<()> {
 
     Ok(())
 }
+
+///
+/// Perform a CI build with powerset of features
+///
+/// # Errors
+/// Errors if one of the commands failed
+///
+pub fn powerset() -> AnyResult<()> {
+    let common = &[
+        "--workspace",
+        "--exclude",
+        "xtask",
+        "--feature-powerset",
+        "--depth",
+        "2",
+    ];
+    cmd(
+        "cargo",
+        &[
+            &["hack", "clippy"],
+            common.as_slice(),
+            &["--", "-D", "warnings"],
+        ]
+        .concat(),
+    )
+    .run()?;
+    cmd("cargo", &[&["hack"], common.as_slice(), &["test"]].concat()).run()?;
+    cmd(
+        "cargo",
+        &[&["hack", "test"], common.as_slice(), &["--doc"]].concat(),
+    )
+    .run()?;
+    Ok(())
+}
+
+///
+/// Show biggest crates in release build
+///
+/// # Errors
+/// Errors if the command failed
+///
+pub fn bloat_deps() -> AnyResult<()> {
+    cmd!("cargo", "bloat", "--release", "--crates").run()?;
+    Ok(())
+}
+
+///
+/// Show crate build times
+///
+/// # Errors
+/// Errors if the command failed
+///
+pub fn bloat_time() -> AnyResult<()> {
+    cmd!("cargo", "bloat", "--time", "-j", "1").run()?;
+    Ok(())
+}
+
+///
+/// Instal cargo tools
+///
+/// # Errors
+/// Errors if one of the commands failed
+///
+pub fn install() -> AnyResult<()> {
+    cmd!("cargo", "install", "cargo-watch").run()?;
+    cmd!("cargo", "install", "cargo-hack").run()?;
+    cmd!("cargo", "install", "cargo-bloat").run()?;
+    Ok(())
+}
