@@ -21,6 +21,7 @@ fn main() -> Result<(), anyhow::Error> {
         .subcommand(Command::new("powerset"))
         .subcommand(Command::new("bloat-deps"))
         .subcommand(Command::new("bloat-time"))
+        .subcommand(Command::new("dev"))
         .subcommand(Command::new("install"))
         .subcommand(Command::new("docs"));
     let matches = cli.get_matches();
@@ -35,6 +36,7 @@ fn main() -> Result<(), anyhow::Error> {
         Some(("ci", _)) => tasks::ci(),
         Some(("docs", _)) => tasks::docs(),
         Some(("install", _)) => tasks::install(),
+        Some(("dev", _)) => tasks::dev(),
         Some(("powerset", _)) => tasks::powerset(),
         Some(("bloat-deps", _)) => tasks::bloat_deps(),
         Some(("bloat-time", _)) => tasks::bloat_time(),

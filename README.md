@@ -20,11 +20,25 @@ For most recent version see [crates.io](https://crates.io/crates/xtaskops)
 
 ## Usage
 
-If you've set up a local `xtask` folder, and are building you tasks, you can use `xtaskops`.
+You should have the `xtask` concept already set up for your project. 
 
-### Tasks
+* To get started quickly, you can use [this Rust CI starter](https://github.com/rusty-ferris-club/rust-starter)
+* To set up manually [follow the repo here](https://github.com/matklad/cargo-xtask/tree/master/examples/hello-world).
 
-Coverage:
+### Available Tasks
+
+Full workflow tasks for your daily development.
+
+* **bloat_deps**	Show biggest crates in release build
+* **bloat_time**	Show crate build times
+* **dev**	Run `cargo check` followed by `cargo test` for every file change
+* **ci**	Run typical CI tasks in series: fmt, clippy, and tests
+* **coverage**	Run coverage
+* **docs**	Run cargo docs in watch mode
+* **install**	Instal cargo tools
+* **powerset**	Perform a CI build with powerset of features
+
+Here's an example for how to integrate the **coverage** task with `clap`:
 
 ```rust
 use xtaskops::tasks;
@@ -33,6 +47,23 @@ let res = match matches.subcommand() {
     Some(("coverage", sm)) => tasks::coverage(sm.is_present("dev")),
   //..
 ```
+
+
+### Ops
+
+Low level convenience operations, for file system operations, user input and more.
+
+```rust
+use xtaskops::ops::{remove_dir, create_dir_all, cmd};
+
+remove_dir("target")?;
+create_dir_all("target")?;
+// cmd! is from the `duct` library
+cmd!("cargo", "watch", "-s", "cargo doc --no-deps").run()?;
+Ok(())
+```
+
+## Running Tasks
 
 Run:
 
@@ -45,18 +76,6 @@ Recommended: alias `cargo xtask` to `x`:
 ```bash
 # in your zshrc/shell rcfile
 alias x="cargo xtask"
-```
-
-### Ops
-
-```rust
-use xtaskops::ops::{remove_dir, create_dir_all, cmd};
-
-remove_dir("target")?;
-create_dir_all("target")?;
-// cmd! is from the `duct` library
-cmd!("cargo", "watch", "-s", "cargo doc --no-deps").run()?;
-Ok(())
 ```
 
 # Copyright

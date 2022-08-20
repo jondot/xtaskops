@@ -151,6 +151,18 @@ pub fn bloat_time() -> AnyResult<()> {
 }
 
 ///
+/// Watch changes and after every change: `cargo check`, followed by `cargo test`
+/// If `cargo check` fails, tests will not run.
+///
+/// # Errors
+/// Errors if the command failed
+///
+pub fn dev() -> AnyResult<()> {
+    cmd!("cargo", "watch", "-x", "check", "-x", "test").run()?;
+    Ok(())
+}
+
+///
 /// Instal cargo tools
 ///
 /// # Errors
