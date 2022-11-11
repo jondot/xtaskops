@@ -428,6 +428,7 @@ name = "xtaskops"
 version = "0.2.2"
 dependencies = [
  "anyhow",
+ "clap",
  "derive_builder",
  "dialoguer",
  "duct",

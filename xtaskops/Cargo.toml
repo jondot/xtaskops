@@ -12,6 +12,10 @@ keywords = ["xtask"]
 license = "Apache-2.0"
 readme = "../README.md"
 
+[features]
+default = ["clap"]
+clap = ["dep:clap"]
+
 [dependencies]
 derive_builder = "*"
 anyhow = "1"
@@ -19,6 +23,8 @@ duct = "0.13.5"
 glob = "0.3.0"
 fs_extra = "1"
 dialoguer = "^0.10.1"
+
+clap = { version = "3", optional = true }
 
 
 [dev-dependencies]

@@ -248,3 +248,48 @@ pub fn install() -> AnyResult<()> {
     cmd!("cargo", "install", "cargo-bloat").run()?;
     Ok(())
 }
+
+/// Set up a main for your xtask. Uses clap.
+/// To customize, look at this function's source and copy it to your
+/// own xtask project.
+///
+/// # Errors
+///
+/// This function will return an error if any command failed
+pub fn main() -> AnyResult<()> {
+    use clap::{AppSettings, Arg, Command};
+    let cli = Command::new("xtask")
+        .setting(AppSettings::SubcommandRequiredElseHelp)
+        .subcommand(
+            Command::new("coverage").arg(
+                Arg::new("dev")
+                    .short('d')
+                    .long("dev")
+                    .help("generate an html report")
+                    .takes_value(false),
+            ),
+        )
+        .subcommand(Command::new("vars"))
+        .subcommand(Command::new("ci"))
+        .subcommand(Command::new("powerset"))
+        .subcommand(Command::new("bloat-deps"))
+        .subcommand(Command::new("bloat-time"))
+        .subcommand(Command::new("docs"));
+    let matches = cli.get_matches();
+
+    let root = crate::ops::root_dir();
+    let res = match matches.subcommand() {
+        Some(("coverage", sm)) => crate::tasks::coverage(sm.is_present("dev")),
+        Some(("vars", _)) => {
+            println!("root: {:?}", root);
+            Ok(())
+        }
+        Some(("ci", _)) => crate::tasks::ci(),
+        Some(("docs", _)) => crate::tasks::docs(),
+        Some(("powerset", _)) => crate::tasks::powerset(),
+        Some(("bloat-deps", _)) => crate::tasks::bloat_deps(),
+        Some(("bloat-time", _)) => crate::tasks::bloat_time(),
+        _ => unreachable!("unreachable branch"),
+    };
+    res
+}

@@ -12,7 +12,7 @@ This is a Rust library that has a few goodies for working with the `xtask` conce
 
 ```toml
 [dependencies]
-xtaskops = "0.1.0"
+xtaskops = "0.2.2"
 ```
 
 For most recent version see [crates.io](https://crates.io/crates/xtaskops)
@@ -25,7 +25,7 @@ You should have the `xtask` concept already set up for your project.
 * To get started quickly, you can use [this Rust CI starter](https://github.com/rusty-ferris-club/rust-starter)
 * To set up manually [follow the repo here](https://github.com/matklad/cargo-xtask/tree/master/examples/hello-world).
 
-### Available Tasks
+## Available Tasks
 
 Full workflow tasks for your daily development.
 
@@ -47,6 +47,17 @@ let res = match matches.subcommand() {
     Some(("coverage", sm)) => tasks::coverage(sm.is_present("dev")),
   //..
 ```
+
+## Quick start
+
+You can include everything from `xtask` in your project. In your `xtask/main.rs`:
+
+```rust
+fn main() -> Result<(), anyhow::Error> {
+    xtaskops::tasks::main()
+}
+```
+
 
 
 ### Ops
