@@ -3,6 +3,7 @@
 //!
 use crate::ops::{clean_files, confirm, remove_dir};
 use anyhow::Result as AnyResult;
+use derive_builder::Builder;
 use duct::cmd;
 use std::fs::create_dir_all;
 
@@ -17,6 +18,54 @@ pub fn docs() -> AnyResult<()> {
     Ok(())
 }
 
+/// Build a CI run
+#[derive(Builder)]
+#[builder(setter(into))]
+pub struct CI {
+    /// run with nightly
+    /// default: on
+    #[builder(default = "true")]
+    pub nightly: bool,
+
+    /// turn all clippy lints on: pedantic, nursery, 2018-idioms
+    /// default: on
+    #[builder(default = "true")]
+    pub clippy_max: bool,
+}
+
+impl CIBuilder {
+    /// Runs this builder
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if run failed
+    pub fn run(&self) -> AnyResult<()> {
+        let t = self.build()?;
+        let mut check_args = vec!["fmt", "--all", "--", "--check"];
+        if t.nightly {
+            check_args.insert(0, "+nightly");
+        }
+
+        let mut clippy_args = vec!["clippy", "--", "-D", "warnings"];
+        if t.clippy_max {
+            clippy_args.extend([
+                "-W",
+                "clippy::pedantic",
+                "-W",
+                "clippy::nursery",
+                "-W",
+                "rust-2018-idioms",
+            ]);
+        }
+
+        cmd("cargo", check_args.as_slice()).run()?;
+        cmd("cargo", clippy_args.as_slice()).run()?;
+        cmd!("cargo", "test").run()?;
+        cmd!("cargo", "test", "--doc").run()?;
+        Ok(())
+    }
+}
+
 ///
 /// Run typical CI tasks in series: `fmt`, `clippy`, and tests
 ///
@@ -24,11 +73,7 @@ pub fn docs() -> AnyResult<()> {
 /// Fails if any command fails
 ///
 pub fn ci() -> AnyResult<()> {
-    cmd!("cargo", "+nightly", "fmt", "--all", "--", "--check").run()?;
-    cmd!("cargo", "clippy", "--", "-D", "warnings").run()?;
-    cmd!("cargo", "test").run()?;
-    cmd!("cargo", "test", "--doc").run()?;
-    Ok(())
+    CIBuilder::default().run()
 }
 
 ///
@@ -94,6 +139,59 @@ pub fn coverage(devmode: bool) -> AnyResult<()> {
     Ok(())
 }
 
+/// Build a powerset test
+#[derive(Builder)]
+#[builder(setter(into))]
+pub struct Powerset {
+    /// powerset depth
+    #[builder(default = "2")]
+    pub depth: i32,
+
+    /// dont run with no feature at all
+    #[builder(default = "false")]
+    pub exclude_no_default_features: bool,
+}
+
+impl PowersetBuilder {
+    /// Builds and runs a powerset test
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if run failed
+    pub fn run(&self) -> AnyResult<()> {
+        let t = self.build()?;
+        let depth = format!("{}", t.depth);
+        let mut common = vec![
+            "--workspace",
+            "--exclude",
+            "xtask",
+            "--feature-powerset",
+            "--depth",
+            &depth,
+        ];
+        if t.exclude_no_default_features {
+            common.push("--exclude-no-default-features");
+        }
+        cmd(
+            "cargo",
+            &[
+                &["hack", "clippy"],
+                common.as_slice(),
+                &["--", "-D", "warnings"],
+            ]
+            .concat(),
+        )
+        .run()?;
+        cmd("cargo", &[&["hack"], common.as_slice(), &["test"]].concat()).run()?;
+        cmd(
+            "cargo",
+            &[&["hack", "test"], common.as_slice(), &["--doc"]].concat(),
+        )
+        .run()?;
+        Ok(())
+    }
+}
+
 ///
 /// Perform a CI build with powerset of features
 ///
@@ -101,31 +199,7 @@ pub fn coverage(devmode: bool) -> AnyResult<()> {
 /// Errors if one of the commands failed
 ///
 pub fn powerset() -> AnyResult<()> {
-    let common = &[
-        "--workspace",
-        "--exclude",
-        "xtask",
-        "--feature-powerset",
-        "--depth",
-        "2",
-    ];
-    cmd(
-        "cargo",
-        &[
-            &["hack", "clippy"],
-            common.as_slice(),
-            &["--", "-D", "warnings"],
-        ]
-        .concat(),
-    )
-    .run()?;
-    cmd("cargo", &[&["hack"], common.as_slice(), &["test"]].concat()).run()?;
-    cmd(
-        "cargo",
-        &[&["hack", "test"], common.as_slice(), &["--doc"]].concat(),
-    )
-    .run()?;
-    Ok(())
+    PowersetBuilder::default().run()
 }
 
 ///
