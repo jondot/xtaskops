@@ -17,7 +17,7 @@ default = ["clap"]
 clap = ["dep:clap"]
 
 [dependencies]
-derive_builder = "*"
+derive_builder = "0.11.2"
 anyhow = "1"
 duct = "0.13.5"
 glob = "0.3.0"
