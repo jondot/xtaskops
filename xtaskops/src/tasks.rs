@@ -24,7 +24,7 @@ pub fn docs() -> AnyResult<()> {
 pub struct CI {
     /// run with nightly
     /// default: on
-    #[builder(default = "true")]
+    #[builder(default = "false")]
     pub nightly: bool,
 
     /// turn all clippy lints on: pedantic, nursery, 2018-idioms
