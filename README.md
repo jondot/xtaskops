@@ -12,7 +12,7 @@ This is a Rust library that has a few goodies for working with the `xtask` conce
 
 ```toml
 [dependencies]
-xtaskops = "0.2.2"
+xtaskops = "0.4.0"
 ```
 
 For most recent version see [crates.io](https://crates.io/crates/xtaskops)

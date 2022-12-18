@@ -2,7 +2,7 @@
 //! Complete xtask tasks such as `docs`, `ci` and others
 //!
 use crate::ops::{clean_files, confirm, remove_dir};
-use anyhow::Result as AnyResult;
+use anyhow::{Context, Result as AnyResult};
 use derive_builder::Builder;
 use duct::cmd;
 use std::fs::create_dir_all;
@@ -132,7 +132,7 @@ pub fn coverage(devmode: bool) -> AnyResult<()> {
         if confirm("open report folder?") {
             cmd!("open", file).run()?;
         } else {
-            println!("report location: {}", file);
+            println!("report location: {file}");
         }
     }
 
@@ -208,8 +208,8 @@ pub fn powerset() -> AnyResult<()> {
 /// # Errors
 /// Errors if the command failed
 ///
-pub fn bloat_deps() -> AnyResult<()> {
-    cmd!("cargo", "bloat", "--release", "--crates").run()?;
+pub fn bloat_deps(package: &str) -> AnyResult<()> {
+    cmd!("cargo", "bloat", "--release", "--crates", "-p", package).run()?;
     Ok(())
 }
 
@@ -219,8 +219,8 @@ pub fn bloat_deps() -> AnyResult<()> {
 /// # Errors
 /// Errors if the command failed
 ///
-pub fn bloat_time() -> AnyResult<()> {
-    cmd!("cargo", "bloat", "--time", "-j", "1").run()?;
+pub fn bloat_time(package: &str) -> AnyResult<()> {
+    cmd!("cargo", "bloat", "--time", "-j", "1", "-p", package).run()?;
     Ok(())
 }
 
@@ -272,8 +272,26 @@ pub fn main() -> AnyResult<()> {
         .subcommand(Command::new("vars"))
         .subcommand(Command::new("ci"))
         .subcommand(Command::new("powerset"))
-        .subcommand(Command::new("bloat-deps"))
-        .subcommand(Command::new("bloat-time"))
+        .subcommand(
+            Command::new("bloat-deps").arg(
+                Arg::new("package")
+                    .short('p')
+                    .long("package")
+                    .help("package to build")
+                    .required(true)
+                    .takes_value(true),
+            ),
+        )
+        .subcommand(
+            Command::new("bloat-time").arg(
+                Arg::new("package")
+                    .short('p')
+                    .long("package")
+                    .help("package to build")
+                    .required(true)
+                    .takes_value(true),
+            ),
+        )
         .subcommand(Command::new("docs"));
     let matches = cli.get_matches();
 
@@ -281,14 +299,20 @@ pub fn main() -> AnyResult<()> {
     let res = match matches.subcommand() {
         Some(("coverage", sm)) => crate::tasks::coverage(sm.is_present("dev")),
         Some(("vars", _)) => {
-            println!("root: {:?}", root);
+            println!("root: {root:?}");
             Ok(())
         }
         Some(("ci", _)) => crate::tasks::ci(),
         Some(("docs", _)) => crate::tasks::docs(),
         Some(("powerset", _)) => crate::tasks::powerset(),
-        Some(("bloat-deps", _)) => crate::tasks::bloat_deps(),
-        Some(("bloat-time", _)) => crate::tasks::bloat_time(),
+        Some(("bloat-deps", sm)) => crate::tasks::bloat_deps(
+            sm.get_one::<String>("package")
+                .context("please provide a package with -p")?,
+        ),
+        Some(("bloat-time", sm)) => crate::tasks::bloat_time(
+            sm.get_one::<String>("package")
+                .context("please provide a package with -p")?,
+        ),
         _ => unreachable!("unreachable branch"),
     };
     res
