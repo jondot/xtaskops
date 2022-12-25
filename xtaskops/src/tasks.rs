@@ -256,6 +256,7 @@ pub fn install() -> AnyResult<()> {
 /// # Errors
 ///
 /// This function will return an error if any command failed
+#[cfg(feature = "clap")]
 pub fn main() -> AnyResult<()> {
     use clap::{AppSettings, Arg, Command};
     let cli = Command::new("xtask")
