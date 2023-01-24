@@ -246,6 +246,8 @@ pub fn install() -> AnyResult<()> {
     cmd!("cargo", "install", "cargo-watch").run()?;
     cmd!("cargo", "install", "cargo-hack").run()?;
     cmd!("cargo", "install", "cargo-bloat").run()?;
+    cmd!("rustup", "component", "add", "llvm-tools-preview").run()?;
+    cmd!("cargo", "install", "grcov").run()?;
     Ok(())
 }
 
