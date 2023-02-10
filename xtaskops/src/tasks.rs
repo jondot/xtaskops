@@ -122,7 +122,8 @@ pub fn coverage(devmode: bool) -> AnyResult<()> {
         "-o",
         file,
     )
-    .run()?;
+    .run()
+    .context("This command can fail if grcov is not installed.\nInstall it by running 'cargo install grcov'")?;
     println!("ok.");
 
     println!("=== cleaning up ===");
