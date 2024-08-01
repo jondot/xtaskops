@@ -1,6 +1,6 @@
 [package]
 name = "xtaskops"
-version = "0.4.2"
+version = "0.4.3"
 edition = "2021"
 
 description = "Goodies for working with the xtask concept"
@@ -15,6 +15,7 @@ readme = "../README.md"
 [features]
 default = ["clap"]
 clap = ["dep:clap"]
+excludes = []
 
 [dependencies]
 derive_builder = "^0.12.0"

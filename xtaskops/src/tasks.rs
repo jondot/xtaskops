@@ -100,8 +100,7 @@ pub fn coverage(devmode: bool) -> AnyResult<()> {
     } else {
         ("lcov", "coverage/tests.lcov")
     };
-    cmd!(
-        "grcov",
+    let mut args=vec!(
         ".",
         "--binary-path",
         "./target/debug/deps",
@@ -109,6 +108,17 @@ pub fn coverage(devmode: bool) -> AnyResult<()> {
         ".",
         "-t",
         fmt,
+    );
+    #[cfg(feature="excludes")]
+    args.append(&mut vec!(
+        "--excl-line",
+        "GRCOV_EXCL_LINE",
+        "--excl-start",
+        "GRCOV_EXCL_START",
+        "--excl-stop",
+        "GRCOV_EXCL_STOP",
+    ));
+    args.append(&mut vec!(
         "--branch",
         "--ignore-not-existing",
         "--ignore",
@@ -121,8 +131,8 @@ pub fn coverage(devmode: bool) -> AnyResult<()> {
         "*/src/tests/*",
         "-o",
         file,
-    )
-    .run()?;
+        ));
+    cmd("grcov", &args).run()?;
     println!("ok.");
 
     println!("=== cleaning up ===");
