@@ -8,6 +8,7 @@ use dialoguer::{theme::ColorfulTheme, Confirm};
 use fs_extra as fsx;
 use fsx::dir::CopyOptions;
 use glob::glob;
+use std::io::{self, IsTerminal};
 use std::path::{Path, PathBuf};
 
 pub use duct::cmd;
@@ -82,10 +83,15 @@ where
 /// Panics if input interaction fails
 ///
 pub fn confirm(question: &str) -> bool {
-    Confirm::with_theme(&ColorfulTheme::default())
-        .with_prompt(question)
-        .interact()
-        .unwrap()
+    // Indicate that the user is prompted for input, if this is a terminal.
+    if io::stdin().is_terminal() {
+        Confirm::with_theme(&ColorfulTheme::default())
+            .with_prompt(question)
+            .interact()
+            .unwrap()
+    } else {
+        false
+    }
 }
 
 ///

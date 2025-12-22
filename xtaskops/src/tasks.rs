@@ -260,16 +260,15 @@ pub fn install() -> AnyResult<()> {
 /// This function will return an error if any command failed
 #[cfg(feature = "clap")]
 pub fn main() -> AnyResult<()> {
-    use clap::{AppSettings, Arg, Command};
+    use clap::{Arg, Command};
     let cli = Command::new("xtask")
-        .setting(AppSettings::SubcommandRequiredElseHelp)
         .subcommand(
             Command::new("coverage").arg(
                 Arg::new("dev")
                     .short('d')
                     .long("dev")
                     .help("generate an html report")
-                    .takes_value(false),
+                    .number_of_values(0),
             ),
         )
         .subcommand(Command::new("vars"))
@@ -282,7 +281,7 @@ pub fn main() -> AnyResult<()> {
                     .long("package")
                     .help("package to build")
                     .required(true)
-                    .takes_value(true),
+                    .number_of_values(1),
             ),
         )
         .subcommand(
@@ -292,15 +291,17 @@ pub fn main() -> AnyResult<()> {
                     .long("package")
                     .help("package to build")
                     .required(true)
-                    .takes_value(true),
+                    .number_of_values(1),
             ),
         )
-        .subcommand(Command::new("docs"));
+        .subcommand(Command::new("docs"))
+        .subcommand_required(true)
+        .arg_required_else_help(true);
     let matches = cli.get_matches();
 
     let root = crate::ops::root_dir();
     let res = match matches.subcommand() {
-        Some(("coverage", sm)) => crate::tasks::coverage(sm.is_present("dev")),
+        Some(("coverage", sm)) => crate::tasks::coverage(sm.contains_id("dev")),
         Some(("vars", _)) => {
             println!("root: {root:?}");
             Ok(())
