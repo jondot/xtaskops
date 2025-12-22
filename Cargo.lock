@@ -185,8 +185,7 @@ dependencies = [
 [[package]]
 name = "dialoguer"
 version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "25f104b501bf2364e78d0d3974cbc774f738f5865306ed128e1e0d7499c0ad96"
+source = "git+https://github.com/yonasBSD/dialoguer#cd77e048c1a80f4a9287aa304c193fd8f51d9e97"
 dependencies = [
  "console",
  "shell-words",
